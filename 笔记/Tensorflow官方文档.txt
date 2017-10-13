@@ -1,0 +1,22 @@
+使用图来表示计算任务
+在被称之为会话的上下文中执行图
+使用tensor表示数据
+通过变量维护状态
+使用feed和fetch可以为任意的操作赋值或从中获取数据
+
+图必须在 会话 里被启动。会话 将图的 op 分发到cpu或GPU，同时提供执行op的方法。这些方法执行后，
+将产生的tensor返回
+
+Tensorflow通常被组织成一个 构建阶段 和一个 执行阶段。在构建阶段，op的执行步骤被描述成一个图。
+在执行阶段， 使用会话session执行执行图中的Op
+
+session 对象在使用完后需要关系以释放资源。session.close()
+
+with...device 语句用来指派特定的CPU或GPU执行操作：  
+	with tf.device("/gpu:1") # "/cpu:0 "机器的cpu "/gpu:0" 机器的第一个GPU
+		matrix1 = tf.constant([[3,3]])
+		matrix2 = tf.constant([[1],[2]])
+		product = tf.matmual(matrix1,matrix2)
+		
+可以把Tensorflow tensor 看作是一个n维的数组和列表
+

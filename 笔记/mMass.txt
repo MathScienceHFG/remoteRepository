@@ -1,0 +1,31 @@
+平滑数据在 mod_signal 里
+基线在mod_signal.baseline
+找峰在mod_peakpicking.py  
+流程：
+1.找出所有极大值点 （mod_signal.maxima），记为peak
+2.过滤（peak中峰值大于threshold(max(signal[basepeak][1] * relThreshold, absThreshold).），记为peak
+3.计算基线
+  1. 将数据分割成n段,得到n个基点，从第一个基点开始，设为x，找到x-x*window所对应序号为i1，找到x+x*window所对应
+  序号为i2,如果i1==i2,则noiselevel=signal[i1][1],noiseWidth = 0;否则，调用noise(C++中的signal_noise)计算noiselevel和noiseWidth.
+  x->x+1.直到最后。得到一个width变量和level变量(n个元素)
+  2.对level,width进行平滑
+  3.width =abs(width),level=max(0,levels-width*offset)  
+  4.计算噪声  
+  对peak的第一个峰，记为p0,以基线中的两个点位基点(取p0左右最近的两个点的levels)进行插值得到
+  该峰点的基线高度p0[2]。以基线中的两个点位基点(取p0左右最近的两个点的width)进行插值得到该峰点的噪声强度noise 
+  信噪比p0[3]=(p0[1]-p0[2])/noise(峰高-基线高度)/噪声强度。p0->p0+1 
+4.过滤（信噪比大于SN）
+5.峰重心中心化;1.求出基准h 2.根据h求出左右两点mz1,mz2（插值）3.中心mz= (mz1+mz2)/2 4.对mz进行插值求出相应的y
+ h = ((peak[1]-peak[2]) * pickingHeight) + peak[2] #peak[1]是峰高，peak[2]是基线
+SN=(peak[1]-peak[2])/noise;  noise = mod_signal.interpolate( (p1[0], p1[2]), (p2[0], p2[2]), x=peak[0])
+噪声值是以基线两端点作为基点在峰点的插值
+计算峰宽在 calculations.signal_width(signal, float(x), float(height))
+
+MASS To Formula 在 mod_formulator.py._compositions
+
+noiseLevel, noiseWidth = signal_noise(signal[i1:i2])#在C++中
+vArrayY = signal.col(1);
+noiseLevel, = median(vArrayY)
+vArrayY = abs(vArrayY-level);
+noiseWidth = 2*median(vArrayY)
+
